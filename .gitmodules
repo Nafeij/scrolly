@@ -1,0 +1,3 @@
+[submodule "scrolly_video"]
+	path = scrolly_video
+	url = https://github.com/Nafeij/scrolly_video.git
