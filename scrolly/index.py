@@ -16,7 +16,7 @@ mimeExt = {
     'image/png': 'png',
 }
 
-root = Path(path.abspath(__file__)).parent.joinpath("scrolly_video")
+root = Path(path.abspath(__file__)).parent.parent.joinpath("scrolly_video")
 asset_root = path.join(root, "public","assets")
 
 def to_code(color):
