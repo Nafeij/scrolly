@@ -1,0 +1,6 @@
+Pylette @ git+https://github.com/Nafeij/Pylette
+mutagen~=1.46.0
+demucs~=4.0.0
+- i https://download.pytorch.org/whl/cu118
+torch
+torchaudio
