@@ -1,1 +1,4 @@
 /.secrets
+/raw/
+/venv/
+/scrolly_video/public/

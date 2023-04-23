@@ -2,27 +2,28 @@ from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from json import dump
 from os import path, walk, makedirs
+from pathlib import Path
+from subprocess import run
 
 import whisper_timestamped as whisper
 from Pylette import extract_colors
 from mutagen import File
 
-from app.separateAudio import separate
-
-darkMode = True
+from separateAudio import separate
 
 mimeExt = {
     'image/jpeg': 'jpg',
     'image/png': 'png',
 }
 
-root = path.abspath("../scrolly_video/public/assets")
+root = Path(path.abspath(__file__)).parent.joinpath("scrolly_video")
+asset_root = path.join(root, "public","assets")
 
 def to_code(color):
     return f"rgb({color[0]}, {color[1]}, {color[2]})"
 
 
-def _getColors(audio: File, voc_start=0, voc_end=30):
+def _getColors(audio: File, darkMode : bool):
     data = audio['APIC:Cover'].data
     image = BytesIO(data)
     colors = extract_colors(image, palette_size=10)
@@ -35,13 +36,11 @@ def _getColors(audio: File, voc_start=0, voc_end=30):
         "bg": colors[9],
         "shadow": colors[6],
         "visual": colors[3],
-        "voc_start": voc_start,
-        "voc_end": voc_end,
     }
 
 
-def sendMetadata(audio: File, bounds: dict[str, float]):
-    colors = _getColors(audio)
+def sendMetadata(audio: File, bounds: dict[str, float], darkMode: bool):
+    colors = _getColors(audio, darkMode)
     config = {
         'album': audio['TALB'].text[0],
         'artists': [audio[k].text[0] for k in ['TPE1', 'TOPE'] if k in audio],
@@ -50,7 +49,7 @@ def sendMetadata(audio: File, bounds: dict[str, float]):
         'colors': colors,
         **bounds
     }
-    with open(path.join(root, 'temp.json'), "w+") as fp:
+    with open(path.join(asset_root, 'temp.json'), "w+") as fp:
         fp.seek(0)
         dump(config, fp, indent=4)
         fp.truncate()
@@ -61,7 +60,7 @@ def sendMetadata(audio: File, bounds: dict[str, float]):
 def sendCover(audio: File):
     cover = audio['APIC:Cover']
     ext = mimeExt[cover.mime]
-    with open(path.join(root, f"temp.{ext}"), "wb+") as fp:
+    with open(path.join(asset_root, f"temp.{ext}"), "wb+") as fp:
         fp.seek(0)
         fp.write(cover.data)
         fp.truncate()
@@ -76,13 +75,13 @@ def to_timestamp(seconds):
 
 
 def splitTranscribe(audio: File) -> dict[str, float]:
-    separate(audio.filename, root)
+    separate(audio.filename, asset_root)
     print(f"{audio['TIT2'][0]}: Separated")
-    audio_w = whisper.load_audio(path.join(root, 'audio', 'vocals.wav'))
+    audio_w = whisper.load_audio(path.join(asset_root, 'audio', 'vocals.wav'))
     model = whisper.load_model('medium.en', device='cuda')
     result = whisper.transcribe(model, audio_w, language="en", vad=True)
 
-    with open(path.join(root, 'temp.lrc'), "w+") as fp:
+    with open(path.join(asset_root, 'temp.lrc'), "w+") as fp:
         # dump(result, fp)
         fp.seek(0)
         for line in result["segments"]:
@@ -98,19 +97,25 @@ def splitTranscribe(audio: File) -> dict[str, float]:
         "voc_end": result["segments"][-1]['words'][-1]['end']
     }
 
+def remotionInit():
+    run("npm install", shell=True, cwd=root, check=True)
 
-def main():
-    makedirs(root, exist_ok=True)
-    audio = None
-    source = '..\\raw'
-    for file in next(walk(source))[2]:
-        if file.endswith(".mp3") or file.endswith(".wav"):
-            audio = File(path.join(source, file))
-            break
+def remotionPreview():
+    run("npx remotion preview", shell=True, cwd=root, check=True)
 
-    if not audio:
-        print("No music file found")
-        return
+
+def load(audioPath: str, darkMode = False):
+
+
+    # audio = None
+    # source = '..\\raw'
+    # for file in next(walk(source))[2]:
+    #     if file.endswith(".mp3") or file.endswith(".wav"):
+    #         audio = File(path.join(source, file))
+    #         break
+    audio = File(audioPath)
+
+    makedirs(asset_root, exist_ok=True)
 
     with ThreadPoolExecutor(max_workers=3) as e:
         print(f"{audio['TIT2'][0]}: Starting tasks")
@@ -118,10 +123,6 @@ def main():
         fut = e.submit(splitTranscribe, audio)
         e.shutdown(wait=True)
 
-    sendMetadata(audio, fut.result())
+    sendMetadata(audio, fut.result(), darkMode)
 
     print(f"{audio['TIT2'][0]}: All tasks completed")
-
-
-if __name__ == "__main__":
-    main()
