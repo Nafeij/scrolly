@@ -2,3 +2,5 @@
 /raw/
 /venv/
 /scrolly_video/public/
+/.env
+/.idea
