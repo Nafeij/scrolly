@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from json import dump
-from os import path, walk, makedirs
+from os import path, makedirs
 from pathlib import Path
 from subprocess import run
 
@@ -26,7 +26,7 @@ def to_code(color):
 def _getColors(audio: File, darkMode : bool):
     data = audio['APIC:Cover'].data
     image = BytesIO(data)
-    colors = extract_colors(image, palette_size=10)
+    colors = extract_colors(image, palette_size=10, sort_mode="luminance")
     colors = [to_code(color.rgb) for color in colors]
     if darkMode:
         colors.reverse()
