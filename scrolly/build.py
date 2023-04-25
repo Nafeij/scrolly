@@ -22,6 +22,12 @@ def main():
         default=False,
     )
     parser.add_argument(
+        "-sS", "--skipSep", "--skipS",
+        help="skips the separation step. Assumes you have stems in the scrolly_video/../assets folder.",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
+    parser.add_argument(
         "-t", "--transcribe",
         help="""transcribe lyrics from audio using Whisper instead of fetching from Musixmatch.
              Note that the latter requires a Musixmatch Token""",
