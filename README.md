@@ -1,4 +1,18 @@
+<p align="center">
+  <img src=".docs/assets/intro_1.png" width="80%" />
+</p>
+<p align="center">
+  <img src=".docs/assets/scroll_2.png" width="80%" />
+</p>
+<p align="center">
+  <img src=".docs/assets/trans_3.gif" width="80%" />
+</p>
+
+[Full video demo](https://youtu.be/8w8nkJMx9L4)
+
 # [WIP] Scrolly
+
+## The ultimate karaoke video workflow
 
 To run:
 

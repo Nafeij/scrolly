@@ -148,6 +148,7 @@ def fromMM(audio: File, args: Namespace):
 def split_transcribe(audio: File, args: Namespace) -> dict[str, float]:
     if not args.skipSep:
         separate(audio.filename, asset_root)
+        # separate.main(["--mp3", "--two-stems", "vocals", "-n", "mdx_extra", "track with space.mp3"])
         logging.info(f"{audio['TIT2'][0]}: Separated")
     if args.transcribe:
         audio_w = whisper.load_audio(path.join(asset_root, 'audio', 'vocals.wav'))

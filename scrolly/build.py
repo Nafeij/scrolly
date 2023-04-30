@@ -22,7 +22,7 @@ def main():
         default=False,
     )
     parser.add_argument(
-        "-sS", "--skipSep", "--skipS",
+        "-s", "--skipSep", "--skip",
         help="skips the separation step. Assumes you have stems in the scrolly_video/../assets folder.",
         action=argparse.BooleanOptionalAction,
         default=False,
