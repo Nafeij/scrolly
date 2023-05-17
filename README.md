@@ -20,18 +20,26 @@ To run:
 
 &nbsp;
 
-    usage: build.py [-h] [-d | --darkMode | --no-darkMode] [-p | --preview | --no-preview] [-t | --transcribe | --no-transcribe] [-u URI] filename
-    
+    usage: Scrolly [-h] [-d | --darkMode | --no-darkMode] [-p | --preview | --no-preview]
+                   [-s | --skipSep | --no-skipSep | --skip | --no-skip] [-t | --transcribe | --no-transcribe] [-u URI]
+                   filename
+
+    the ultimate karaoke video workflow
+
     positional arguments:
       filename              path to music file
-    
+
     options:
       -h, --help            show this help message and exit
       -d, --darkMode, --no-darkMode
-                            give your video a dark theme (default: False)
+                            gives your video a dark theme (default: False)
       -p, --preview, --no-preview
-                            init remotion and show preview (default: False)
+                            initializes remotion and shows a preview of your video in the browser (default: False)
+      -s, --skipSep, --no-skipSep, --skip, --no-skip
+                            skips the separation step. Assumes you have stems in the scrolly_video/../assets folder.
+                            (default: False)
       -t, --transcribe, --no-transcribe
-                            transcribe lyrics from audio instead of fetching from Musixmatch (default: False)
+                            transcribe lyrics from audio using Whisper instead of fetching from Musixmatch. Note that the
+                            latter requires a Musixmatch Token (default: False)
       -u URI, --uri URI, --url URI
-                            Spotify URI to assist in fetching lyrics (default: )
+                            Spotify URI for your song, to help fetch lyrics (default: )
