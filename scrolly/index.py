@@ -17,10 +17,17 @@ from mutagen import File
 from MxLRC import mxlrc
 from separateAudio import separate
 
-mimeExt = {
+MIME_EXTS = {
     'image/jpeg': 'jpg',
     'image/png': 'png',
 }
+
+COVERS = [
+    'APIC:',
+    'APIC:Cover',
+    'APIC:Cover (front)',
+    'APIC:Cover (back)',
+]
 
 root = Path(path.abspath(__file__)).parent.parent
 remotion_root = root.joinpath("scrolly_video")
@@ -31,14 +38,13 @@ def to_code(color):
     return f"rgb({color[0]}, {color[1]}, {color[2]})"
 
 
-def _getColors(audio: File, darkMode: bool):
-    data = audio['APIC:Cover'].data
+def _getColors(name : str, data : bytes, darkMode: bool):
     image = BytesIO(data)
     colors = extract_colors(image, palette_size=10, sort_mode="luminance")
     colors = [to_code(color.rgb) for color in colors]
     if darkMode:
         colors.reverse()
-    logging.info(f"{audio['TIT2'].text[0]}: Palette extracted")
+    logging.info(f"{name}: Palette extracted")
     return {
         "txt": colors[0],
         "bg": colors[9],
@@ -51,8 +57,8 @@ def fetch_artists(audio: File):
     return [audio[k].text[0] for k in ['TPE1', 'TOPE'] if k in audio]
 
 
-def sendMetadata(audio: File, bounds: dict[str, float], args: Namespace):
-    colors = _getColors(audio, args.darkMode)
+def sendMetadata(audio: File, colorData : bytes, bounds: dict[str, float], args: Namespace):
+    colors = _getColors(audio['TIT2'].text[0], colorData, args.darkMode)
     config = {
         'album': audio['TALB'].text[0],
         'artists': fetch_artists(audio),
@@ -70,14 +76,22 @@ def sendMetadata(audio: File, bounds: dict[str, float], args: Namespace):
 
 
 def sendCover(audio: File):
-    cover = audio['APIC:Cover']
-    ext = mimeExt[cover.mime]
+    cover = None
+    for key in COVERS:
+        if key in audio:
+            cover = audio[key]
+            break
+    if cover is None:
+        logging.warning(f"{audio['TIT2'].text[0]}: Cover not found")
+        return
+    ext = MIME_EXTS[cover.mime]
     with open(path.join(asset_root, f"temp.{ext}"), "wb+") as fp:
         fp.seek(0)
         fp.write(cover.data)
         fp.truncate()
     fp.close()
     logging.info(f"{audio['TIT2'][0]}: Cover sent")
+    return cover.data
 
 
 class Word(TypedDict):
@@ -187,10 +201,10 @@ def load(args):
 
     with ThreadPoolExecutor(max_workers=3) as e:
         logging.info(f"{audio['TIT2'][0]}: Starting tasks")
-        e.submit(sendCover, audio)
-        fut = e.submit(split_transcribe, audio, args)
+        futCover =  e.submit(sendCover, audio)
+        futStartEnd = e.submit(split_transcribe, audio, args)
         e.shutdown(wait=True)
 
-    sendMetadata(audio, fut.result(), args)
+    sendMetadata(audio, futCover.result(), futStartEnd.result(), args)
 
     logging.info(f"{audio['TIT2'][0]}: All tasks completed")
