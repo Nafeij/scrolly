@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 
 from index import load, remotionInit, remotionPreview, syncEnv

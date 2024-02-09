@@ -1,0 +1,12 @@
+name: scrolly
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - python-dotenv=0.21.0
+  - pytorch
+  - pytorch-cuda=12.1
+  - torchaudio
+  - torchvision
+  - ffmpeg
+prefix: C:\Users\wngji\.conda\envs\scrolly

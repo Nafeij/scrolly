@@ -2,7 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/scrolly/MxLRC" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/scripts/MxLRC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/scrolly_video" vcs="Git" />
   </component>
 </project>
